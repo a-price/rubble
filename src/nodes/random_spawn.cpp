@@ -48,6 +48,9 @@
 #include </home/arprice/gazebo_ros_ws/devel/include/gazebo_msgs/SpawnModel.h>
 #endif
 
+const std::string modelName = "boxModel";
+const std::string modelString = "<?xml version='1.0'?><sdf version='1.4'><model name=\"my_robot\"><static>false</static><link name='link'><pose>0 0 0 0 0 0</pose><collision name='collision'><geometry><box><size>.4 .2 .1</size></box></geometry></collision><visual name='visual'><geometry><box><size>.4 .2 .1</size></box></geometry></visual></link></model></sdf>";
+
 ros::Publisher zPub;
 
 void stateCallback(const gazebo_msgs::ModelStatesConstPtr states)
@@ -89,13 +92,9 @@ int main(int argc, char** argv)
 	//ros::ServiceClient client = nh.serviceClient<gazebo_msgs::SpawnModel>("/gazebo/spawn_urdf_model");
 	ros::ServiceClient client = nh.serviceClient<gazebo_msgs::SpawnModel>("/gazebo/spawn_sdf_model");
 
-	req.model_name = "testModel";
+	req.model_name = nameString;
 	req.reference_frame = "map";
-	//req.model_xml = "<?xml version=\"1.0\"?><robot name=\"testModel\"><link name=\"base_link\"><visual><geometry><cylinder length=\"0.6\" radius=\"0.2\"/></geometry></visual></link></robot>";
-	req.model_xml =
-	//	"<?xml version=\"2.0\" ?><gazebo version=\"1.2\"><model name=\"drill\"><link name=\"link\"><inertial><pose>-0.00637 -0.008 0.13254 0 0 0</pose><inertia><ixx>0.01331127</ixx><ixy>-0.00030365</ixy><ixz>-0.00034148</ixz><iyy>0.01157659</iyy><iyz>0.00088073</iyz><izz>0.00378028</izz></inertia><mass>1.50251902</mass></inertial><collision name=\"collision\"><pose>0 0 -0.09 0 0 0</pose>"
-	//	"<geometry><mesh><uri>model://cordless_drill/meshes/cordless_drill.stl</uri></mesh></geometry></collision><visual name=\"visual\"><pose>0 0 -0.09 0 0 0</pose><geometry><mesh><uri>model://cordless_drill/meshes/cordless_drill.dae</uri></mesh></geometry></visual></link></model></gazebo>";
-	"<?xml version='1.0'?><sdf version='1.3'><model name=\"my_robot\"><static>false</static><link name='chassis'><pose>0 0 .1 0 0 0</pose><collision name='collision'><geometry><box><size>.4 .2 .1</size></box></geometry></collision><visual name='visual'><geometry><box><size>.4 .2 .1</size></box></geometry></visual></link></model></sdf>";
+	req.model_xml = modelString;
 
 	req.initial_pose.position.x = 0;
 	req.initial_pose.position.y = 0;
