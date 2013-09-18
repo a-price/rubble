@@ -1,0 +1,27 @@
+digraph g{
+node [shape="box"];
+spawn [label="Random Spawn" shape="ellipse"];
+fg [label="Graphical Hierarchy"];
+rs [label="Record State"];
+remove [label="Remove Proposed Node"];
+eval [label="Evaluate Move" shape="diamond"];
+undo [label="Undo Move"];
+accept [label="Accept Move"];
+bt [label="Backtrack Proposal"];
+fin [label="Finished?" shape="diamond"];
+end [label="Found Solution" shape="ellipse"];
+
+spawn->fg [label="World"];
+fg->rs;
+rs->remove;
+remove->eval;
+eval->undo [label="Fail"];
+eval->accept [label="Pass"];
+rs->undo;
+undo->bt;
+bt->remove;
+
+accept->fin;
+fin->end [label="Yes"];
+fin->fg [label="No"];
+}

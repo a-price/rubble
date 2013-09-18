@@ -1,0 +1,55 @@
+digraph G {
+	rankdir="BT";
+	fontname = "Bitstream Vera Sans"
+	fontsize = 8
+
+	node [
+		fontname = "Bitstream Vera Sans"
+		fontsize = 8
+		shape = "record"
+	]
+
+	edge [
+		fontname = "Bitstream Vera Sans"
+		fontsize = 8
+	]
+
+	BNode [	label="{Boost::Node||}" ];
+	BEdge [	label="{Boost::Edge||}" ];
+	BGraph [ label="{Boost::Graph||}" ];
+
+	CNode [	label="{Node|+ configuration : std::set\<int\>\l|}" ];
+	CEdge [	label="{Edge||}" ];
+	CGraph [ label="{Graph||}" ];
+
+	Animal [
+		label = "{Animal|+ name : string\l+ age : int\l|+ die() : void\l}"
+	]
+
+	Dog [
+		label = "{Dog||+ bark() : void\l}"
+	]
+
+	Cat [
+		label = "{Cat||+ meow() : void\l}"
+	]
+
+	edge [
+		arrowhead = "empty"
+	]
+
+	CNode->BNode;
+	CEdge->BEdge;
+	CGraph->BGraph;
+
+	edge [
+		arrowhead = "diamond"
+
+		headlabel = "1"
+		taillabel = "0..*"
+	]
+
+	BNode->BGraph;
+	BEdge->BGraph;
+
+}
