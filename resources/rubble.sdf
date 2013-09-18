@@ -1,0 +1,47 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+	<model name="my_block">
+		<static>false</static>
+		<link name='link'>
+			<pose>0 0 0 0 0 0</pose>
+			<inertial>
+				<mass>720.0</mass>
+				<inertia>
+					<ixx>140</ixx>
+					<ixy>0.0</ixy><iyy>550</iyy>
+					<ixz>0.0</ixz><iyz>0.0</iyz><izz>550</izz>
+				</inertia>
+			</inertial>
+			<visual name='visual'>
+				<geometry>
+					<box>
+						<size>1 .1 .05</size>
+					</box>
+				</geometry>
+				<material>
+					<ambient>0.6 0.3 0 1</ambient>
+					<diffuse>0.6 0.3 0 1</diffuse>
+					<specular>0.1 0.1 0.1 1</specular>
+					<emissive>0 0 0 0</emissive>
+				</material>
+			</visual>
+			<collision name='collision'>
+				<geometry>
+					<box>
+						<size>1 .1 .05</size>
+					</box>
+				</geometry>
+				<surface>
+					<friction>
+						<ode>
+							<mu>100000.0</mu>
+							<mu2>100000.0</mu2>
+							<slip1>0.0</slip1>
+							<slip2>0.0</slip2>
+						</ode>
+					</friction>
+				</surface>
+			</collision>
+		</link>
+	</model>
+</sdf>

@@ -6,15 +6,10 @@ set(BUILD_FLAGS "-std=c++0x -Wreturn-type -Wno-enum-compare")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp
+find_package(catkin REQUIRED COMPONENTS roscpp roslib
  message_generation genmsg actionlib actionlib_msgs
  std_msgs sensor_msgs geometry_msgs trajectory_msgs control_msgs diagnostic_msgs visualization_msgs interactive_markers gazebo_msgs
  tf tf_conversions eigen_conversions rviz class_loader joystick_integrator urdf)
-
-#find_package(catkin REQUIRED )
-
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
 
 # Include Eigen for matrices
 find_package(Eigen REQUIRED)
