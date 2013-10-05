@@ -3,15 +3,13 @@
  * \brief Creates a random pile of stuff to play with
  *
  * \author Andrew Price
+ * \author Laura Strickland
  * \date September 13, 2013
  *
  * \copyright
  *
  * Copyright (c) 2013, Georgia Tech Research Corporation
  * All rights reserved.
- *
- * Humanoid Robotics Lab Georgia Institute of Technology
- * Director: Mike Stilman http://www.golems.org
  *
  * This file is provided under the following "BSD-style" License:
  * Redistribution and use in source and binary forms, with or

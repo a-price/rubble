@@ -31,7 +31,6 @@
 	<build_depend>sensor_msgs</build_depend>
 	<build_depend>geometry_msgs</build_depend>
 	<build_depend>trajectory_msgs</build_depend>
-	<build_depend>control_msgs</build_depend>
 	<build_depend>diagnostic_msgs</build_depend>
 	<build_depend>actionlib</build_depend>
 	<build_depend>actionlib_msgs</build_depend>
@@ -40,7 +39,6 @@
 	<build_depend>eigen_conversions</build_depend>
     <build_depend>rviz</build_depend>
     <build_depend>class_loader</build_depend>
-	<build_depend>joystick_integrator</build_depend>
 	<build_depend>visualization_msgs</build_depend>
 	<build_depend>interactive_markers</build_depend>
 	<build_depend>urdf</build_depend>
@@ -55,7 +53,6 @@
 	<run_depend>sensor_msgs</run_depend>
 	<run_depend>geometry_msgs</run_depend>
 	<run_depend>trajectory_msgs</run_depend>
-	<run_depend>control_msgs</run_depend>
 	<run_depend>diagnostic_msgs</run_depend>
 	<run_depend>actionlib</run_depend>
 	<run_depend>actionlib_msgs</run_depend>
@@ -64,7 +61,6 @@
 	<run_depend>eigen_conversions</run_depend>
     <run_depend>rviz</run_depend>
     <run_depend>class_loader</run_depend>
-	<run_depend>joystick_integrator</run_depend>
 	<run_depend>visualization_msgs</run_depend>
 	<run_depend>interactive_markers</run_depend>
 	<run_depend>urdf</run_depend>
