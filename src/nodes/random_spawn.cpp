@@ -195,7 +195,7 @@ int main(int argc, char** argv)
 		ROS_INFO_STREAM("Response:\n" << resp);
 	}
 
-	ros::spin();
+	ros::spinOnce();
 
 	return 0;
 }
