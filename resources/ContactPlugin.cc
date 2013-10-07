@@ -43,12 +43,13 @@ void ContactPlugin::OnUpdate()
   // Get all the contacts.
   msgs::Contacts contacts;
   contacts = this->parentSensor->GetContacts();
+  std::vector<std::pair<std::string, std::string> >contacted; // declaring vector of pairs of contacts
   for (unsigned int i = 0; i < contacts.contact_size(); ++i)
   {
-    std::cout << "Collision between[" << contacts.contact(i).collision1()
-              << "] and [" << contacts.contact(i).collision2() << "]\n";
+     contacted.push_back(make_pair(contacts.contact(i).collision1(), contacts.contact(i).collision2()));
 
-    for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
+
+   /* for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
     {
       std::cout << j << "  Position:"
                 << contacts.contact(i).position(j).x() << " "
@@ -59,6 +60,11 @@ void ContactPlugin::OnUpdate()
                 << contacts.contact(i).normal(j).y() << " "
                 << contacts.contact(i).normal(j).z() << "\n";
       std::cout << "   Depth:" << contacts.contact(i).depth(j) << "\n";
-    }
+    }*/
+  }
+
+  for(std::vector<std::pair<std::string, std::string> >::iterator it = contacted.begin(); it!=contacted.end(); it++)
+  {
+    std:: cout << "<" << it->first << ", " << it->second << ")" << std::endl;
   }
 }
