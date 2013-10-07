@@ -46,31 +46,6 @@ void ContactPlugin::OnUpdate()
   // Get all the contacts.
   msgs::Contacts contacts;
   contacts = this->parentSensor->GetContacts();
-<<<<<<< HEAD
-  std::vector<std::pair<std::string, std::string> >contacted; // declaring vector of pairs of contacts
-  for (unsigned int i = 0; i < contacts.contact_size(); ++i)
-  {
-     contacted.push_back(make_pair(contacts.contact(i).collision1(), contacts.contact(i).collision2()));
-
-
-   /* for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
-    {
-      std::cout << j << "  Position:"
-                << contacts.contact(i).position(j).x() << " "
-                << contacts.contact(i).position(j).y() << " "
-                << contacts.contact(i).position(j).z() << "\n";
-      std::cout << "   Normal:"
-                << contacts.contact(i).normal(j).x() << " "
-                << contacts.contact(i).normal(j).y() << " "
-                << contacts.contact(i).normal(j).z() << "\n";
-      std::cout << "   Depth:" << contacts.contact(i).depth(j) << "\n";
-    }*/
-  }
-
-  for(std::vector<std::pair<std::string, std::string> >::iterator it = contacted.begin(); it!=contacted.end(); it++)
-  {
-    std:: cout << "<" << it->first << ", " << it->second << ")" << std::endl;
-=======
 
   // TODO: Don't publish duplicate states
 
@@ -120,7 +95,6 @@ void ContactPlugin::OnUpdate()
 	  }
 
 	  cs.states.push_back(c);
->>>>>>> fb86f76511c8af80d72ffcc37876ad9002bf947f
   }
 
   cs.header.stamp = ros::Time::now();
