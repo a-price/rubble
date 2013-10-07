@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS roscpp roslib
  message_generation genmsg actionlib actionlib_msgs
- std_msgs sensor_msgs geometry_msgs trajectory_msgs diagnostic_msgs visualization_msgs interactive_markers gazebo_msgs
+ std_msgs sensor_msgs geometry_msgs diagnostic_msgs visualization_msgs gazebo_msgs
  tf tf_conversions eigen_conversions rviz class_loader urdf)
 
 # Include Eigen for matrices
@@ -20,40 +20,6 @@ add_definitions(${EIGEN_DEFINITIONS})
 find_package(CppUnit)
 include_directories(${CPPUNIT_INCLUDE_DIR})
 link_libraries(${CPPUNIT_LIBRARIES})
-
-#######################################
-## Declare ROS messages and services ##
-#######################################
-
-## Generate messages in the 'msg' folder
-file(GLOB message_source "msg/*.msg")
-list(SORT message_source)
-foreach(message_src_file ${message_source})
-	get_filename_component(message_base ${message_src_file} NAME)
-	message(STATUS "Adding message ${message_base}" )
-	add_message_files(DIRECTORY msg FILES ${message_base})
-endforeach(message_src_file)
-
-## Generate services in the 'srv' folder
-file(GLOB service_source "srv/*.srv")
-list(SORT service_source)
-foreach(service_src_file ${service_source})
-	get_filename_component(service_base ${service_src_file} NAME)
-	message(STATUS "Adding service ${service_base}" )
-	add_service_files(DIRECTORY srv FILES ${service_base})
-endforeach(service_src_file)
-
-## Generate actions in the 'action' folder
-file(GLOB action_source "action/*.action")
-list(SORT action_source)
-foreach(action_src_file ${action_source})
-	get_filename_component(action_base ${action_src_file} NAME)
-	message(STATUS "Adding action ${action_base}" )
-	add_action_files(DIRECTORY action FILES ${action_base})
-endforeach(action_src_file)
-
-## Actually generate the language-specific message and service files
-generate_messages(DEPENDENCIES std_msgs sensor_msgs geometry_msgs trajectory_msgs diagnostic_msgs actionlib_msgs gazebo_msgs)
 
 ###################################
 ## catkin specific configuration ##
@@ -76,6 +42,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS})
 link_libraries(${catkin_LIBRARIES})
+
+add_subdirectory(resources)
 
 ###########
 ## Build ##
