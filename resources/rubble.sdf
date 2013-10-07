@@ -42,6 +42,12 @@
 					</friction>
 				</surface>
 			</collision>
+			<sensor name='contact_sensor' type='contact'>
+				<plugin name="contact_plugin" filename="libcontact.so"/>
+				<contact>
+					<collision>collision</collision>
+				</contact>
+			</sensor>
 		</link>
 	</model>
 </sdf>
