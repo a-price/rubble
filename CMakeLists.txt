@@ -69,6 +69,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${BUILD_FLAGS})
 enable_testing()
 
 # Build unit tests
+if(${CPPUNIT_FOUND})
 message(STATUS "\n-- UNIT TESTS: ")
 foreach(utest_src_file ${unit_tests_source})
 	get_filename_component(test_base ${utest_src_file} NAME_WE)
@@ -80,6 +81,7 @@ foreach(utest_src_file ${unit_tests_source})
 	set_target_properties(${test_base} PROPERTIES COMPILE_FLAGS ${BUILD_FLAGS})
 	add_dependencies(tests ${test_base})
 endforeach(utest_src_file)
+endif()
 
 # Build executables
 message(STATUS "\n-- ROS NODES: ")
