@@ -1,9 +1,9 @@
 /**
- * \file rubbleGraphHelper.h
+ * \file GraphUtils.h
  * \brief
  *
  * \author Andrew Price
- * \date October 7, 2013
+ * \date 10 12, 2013
  *
  * \copyright
  *
@@ -38,54 +38,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUBBLEGRAPHHELPER_H
-#define RUBBLEGRAPHHELPER_H
+#ifndef GRAPHUTILS_H
+#define GRAPHUTILS_H
 
-#include <map>
-#include <rubble/RubbleGraph.h>
+#include "rubble/GraphHelper.h"
 
 namespace rubble
 {
 
-typedef std::map<std::string, Graph::vertex_descriptor> VertexMap;
+std::vector<std::string> getSequence(GraphHelper& graph);
 
-class GraphHelper
-{
-public:
-	GraphHelper();
-	~GraphHelper();
+}
 
-	Node::Ptr getNode(std::string nodeID);
-	std::set<std::string> getParents(std::string nodeID);
-	std::set<std::string> getChildren(std::string nodeID);
-
-	/**
-	 * @brief Attempts to add a node to the graph.
-	 * If the node already exists, it returns the existing vertex.
-	 * @return Reference to either new or existing vertex
-	 */
-	Node& addNode(std::string);
-
-	/**
-	 * @brief Attempts to add an edge between the two nodes specified by the strings.
-	 * If either node does not exist, it is created.
-	 * @return
-	 */
-	Edge& addEdge(std::string from, std::string to);
-
-	std::set<std::string> getNodeIDs();
-	std::set<std::string> getIndependent();
-
-	/**
-	 * @brief Creates a graphviz file string for the graph
-	 * @return
-	 */
-	std::string toDot();
-
-protected:
-	Graph graph;
-	VertexMap vertexMap;
-};
-
-} // Rubble
-#endif // RUBBLEGRAPHHELPER_H
+#endif // GRAPHUTILS_H

@@ -1,6 +1,6 @@
 /**
- * \file rubbleGraphHelper.h
- * \brief
+ * \file TestGraphFollow.cpp
+ * \brief Verifies operation of ParameterizedObject classes
  *
  * \author Andrew Price
  * \date October 7, 2013
@@ -9,9 +9,6 @@
  *
  * Copyright (c) 2013, Georgia Tech Research Corporation
  * All rights reserved.
- *
- * Humanoid Robotics Lab Georgia Institute of Technology
- * Director: Mike Stilman http://www.golems.org
  *
  * This file is provided under the following "BSD-style" License:
  * Redistribution and use in source and binary forms, with or
@@ -38,54 +35,67 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUBBLEGRAPHHELPER_H
-#define RUBBLEGRAPHHELPER_H
+//#include "gtest/gtest.h"
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <map>
-#include <rubble/RubbleGraph.h>
+#include "rubble/GraphHelper.h"
 
-namespace rubble
+//using namespace hubo_motion_ros;
+
+class TestGraphFollow : public CppUnit::TestFixture
 {
-
-typedef std::map<std::string, Graph::vertex_descriptor> VertexMap;
-
-class GraphHelper
-{
+	CPPUNIT_TEST_SUITE( TestGraphFollow );
+	CPPUNIT_TEST(TestMakeSequence);
+	CPPUNIT_TEST_SUITE_END();
 public:
-	GraphHelper();
-	~GraphHelper();
 
-	Node::Ptr getNode(std::string nodeID);
-	std::set<std::string> getParents(std::string nodeID);
-	std::set<std::string> getChildren(std::string nodeID);
+	std::vector<rubble::GraphHelper> graphs;
+	virtual void setUp()
+	{
+		// Simple chain
+		rubble::GraphHelper graphChain;
+		graphChain.addEdge("B", "A");
+		graphChain.addEdge("C", "B");
+		graphs.push_back(graphChain);
 
-	/**
-	 * @brief Attempts to add a node to the graph.
-	 * If the node already exists, it returns the existing vertex.
-	 * @return Reference to either new or existing vertex
-	 */
-	Node& addNode(std::string);
+		// Simple tree
+		rubble::GraphHelper graphTree;
+		graphTree.addEdge("B", "A");
+		graphTree.addEdge("C", "B");
+		graphTree.addEdge("D", "B");
+		graphs.push_back(graphTree);
 
-	/**
-	 * @brief Attempts to add an edge between the two nodes specified by the strings.
-	 * If either node does not exist, it is created.
-	 * @return
-	 */
-	Edge& addEdge(std::string from, std::string to);
+		// Simple cycle
+		rubble::GraphHelper graphCycle;
+		graphCycle.addEdge("B", "A");
+		graphCycle.addEdge("C", "B");
+		graphCycle.addEdge("A", "C");
+		graphs.push_back(graphCycle);
 
-	std::set<std::string> getNodeIDs();
-	std::set<std::string> getIndependent();
+	}
 
-	/**
-	 * @brief Creates a graphviz file string for the graph
-	 * @return
-	 */
-	std::string toDot();
+	virtual void tearDown () {}
 
-protected:
-	Graph graph;
-	VertexMap vertexMap;
+	void TestMakeSequence()
+	{
+		for (rubble::GraphHelper graph : graphs)
+		{
+			std::set<std::string> free = graph.getIndependent();
+			for (std::set<std::string>::iterator i = free.begin();
+				 i != free.end();
+				 ++i)
+			{
+				std::cout << *i << std::endl;
+			}
+		}
+	}
 };
 
-} // Rubble
-#endif // RUBBLEGRAPHHELPER_H
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGraphFollow);
+
+//int main(int argc, char **argv)
+//{
+//	::testing::InitGoogleTest(&argc, argv);
+//	return RUN_ALL_TESTS();
+//}

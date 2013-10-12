@@ -1,9 +1,9 @@
 /**
- * \file rubbleGraphHelper.h
+ * \file GraphUtils.cpp
  * \brief
  *
  * \author Andrew Price
- * \date October 7, 2013
+ * \date 10 12, 2013
  *
  * \copyright
  *
@@ -38,54 +38,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUBBLEGRAPHHELPER_H
-#define RUBBLEGRAPHHELPER_H
-
-#include <map>
-#include <rubble/RubbleGraph.h>
+#include "rubble/GraphUtils.h"
 
 namespace rubble
 {
-
-typedef std::map<std::string, Graph::vertex_descriptor> VertexMap;
-
-class GraphHelper
+std::vector<std::string> getSequence(GraphHelper& graph)
 {
-public:
-	GraphHelper();
-	~GraphHelper();
+	// Start at each node
+	std::set<std::string> nodeIDs = graph.getNodeIDs();
 
-	Node::Ptr getNode(std::string nodeID);
-	std::set<std::string> getParents(std::string nodeID);
-	std::set<std::string> getChildren(std::string nodeID);
+	for (std::string nodeID : nodeIDs)
+	{
+		Node::Ptr node = graph.getNode(nodeID);
+	}
 
-	/**
-	 * @brief Attempts to add a node to the graph.
-	 * If the node already exists, it returns the existing vertex.
-	 * @return Reference to either new or existing vertex
-	 */
-	Node& addNode(std::string);
+	// Follow the tree up to its root
 
-	/**
-	 * @brief Attempts to add an edge between the two nodes specified by the strings.
-	 * If either node does not exist, it is created.
-	 * @return
-	 */
-	Edge& addEdge(std::string from, std::string to);
+	// Check for cycle
 
-	std::set<std::string> getNodeIDs();
-	std::set<std::string> getIndependent();
-
-	/**
-	 * @brief Creates a graphviz file string for the graph
-	 * @return
-	 */
-	std::string toDot();
-
-protected:
-	Graph graph;
-	VertexMap vertexMap;
-};
-
-} // Rubble
-#endif // RUBBLEGRAPHHELPER_H
+	// If found, pick some part of the cycle as root
+}
+}

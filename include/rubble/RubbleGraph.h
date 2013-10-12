@@ -52,6 +52,8 @@ namespace rubble
 struct Node
 {
 	std::string debrisName;
+
+	typedef boost::shared_ptr<Node> Ptr;
 };
 
 struct Edge
@@ -59,7 +61,7 @@ struct Edge
 
 };
 
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS, Node, Edge> Graph;
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, Node, Edge> Graph;
 }
 
 #endif // RUBBLEGRAPH_H
