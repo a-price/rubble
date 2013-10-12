@@ -75,6 +75,7 @@ public:
 
 	std::set<std::string> getNodeIDs();
 	std::set<std::string> getIndependent();
+	std::vector<std::pair<unsigned int, std::string> > sortByDegree();
 
 	/**
 	 * @brief Creates a graphviz file string for the graph

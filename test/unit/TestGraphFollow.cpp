@@ -1,6 +1,6 @@
 /**
  * \file TestGraphFollow.cpp
- * \brief Verifies operation of ParameterizedObject classes
+ * \brief Verifies operation of GraphHelper
  *
  * \author Andrew Price
  * \date October 7, 2013
@@ -35,7 +35,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#include "gtest/gtest.h"
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -86,7 +85,15 @@ public:
 				 i != free.end();
 				 ++i)
 			{
+				CPPUNIT_ASSERT("A" == *i);
 				std::cout << *i << std::endl;
+			}
+
+			std::vector<std::pair<unsigned int, std::string> > order = graph.sortByDegree();
+			for (int i = 0; i < order.size(); i++)
+			{
+				std::pair<unsigned int, std::string>& item = order[i];
+				std::cout << item.second << ": " << item.first << std::endl;
 			}
 		}
 	}

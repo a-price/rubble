@@ -169,6 +169,21 @@ std::set<std::string> GraphHelper::getIndependent()
 	return retVal;
 }
 
+std::vector<std::pair<unsigned int, std::string> > GraphHelper::sortByDegree()
+{
+	std::vector<std::pair<unsigned int, std::string> > retVal;
+
+	for (std::pair<std::string, Graph::vertex_descriptor> entry : vertexMap)
+	{
+		std::pair<unsigned int, std::string> newEntry(boost::out_degree(entry.second, graph), entry.first);
+		retVal.push_back(newEntry);
+	}
+
+	std::sort(retVal.begin(), retVal.end());
+
+	return retVal;
+}
+
 std::set<std::string> GraphHelper::getNodeIDs()
 {
 	std::set<std::string> retVal;
