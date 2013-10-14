@@ -99,7 +99,7 @@ std::string GraphHelper::toDot()
 {
 	std::ostringstream outfile;
 	outfile << "digraph G {\n";
-	outfile << "rankdir=\"BT\";";
+	outfile << "rankdir=\"BT\";\n";
 
 	// Loop through all edges
 	Graph::edge_iterator edgeIt, edgeEnd;
@@ -108,8 +108,8 @@ std::string GraphHelper::toDot()
 	{
 		Graph::vertex_descriptor fromV = boost::source(*edgeIt, graph);
 		Graph::vertex_descriptor toV = boost::target(*edgeIt, graph);
-		Node & fromNode = graph[fromV];
-		Node & toNode = graph[toV];
+		Node& fromNode = graph[fromV];
+		Node& toNode = graph[toV];
 
 		outfile << fromNode.debrisName << "->" << toNode.debrisName << ";\n";
 	}
