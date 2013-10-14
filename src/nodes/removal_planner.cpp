@@ -87,6 +87,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 			graph.addEdge(b, a);
 		}
 	}
+	std::cerr << "Hi!" << std::endl;
 
 	if (ros::Time::now() > tLocked + tWait)
 	{

@@ -63,7 +63,9 @@ public:
 		graphTree.addEdge("B", "A");
 		graphTree.addEdge("C", "B");
 		graphTree.addEdge("D", "B");
+		graphTree.addEdge("D", "A");
 		graphs.push_back(graphTree);
+		std::cout << graphTree.toDot() << std::endl;
 
 		// Simple cycle
 		rubble::GraphHelper graphCycle;
