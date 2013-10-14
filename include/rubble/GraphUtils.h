@@ -1,9 +1,9 @@
 /**
- * \file RubbleGraph.h
+ * \file GraphUtils.h
  * \brief
  *
  * \author Andrew Price
- * \date October 7, 2013
+ * \date 10 12, 2013
  *
  * \copyright
  *
@@ -38,30 +38,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUBBLEGRAPH_H
-#define RUBBLEGRAPH_H
+#ifndef GRAPHUTILS_H
+#define GRAPHUTILS_H
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/graph/adj_list_serialize.hpp>
-#include <boost/graph/filtered_graph.hpp>
+#include "rubble/GraphHelper.h"
 
 namespace rubble
 {
 
-struct Node
-{
-	std::string debrisName;
+std::vector<std::string> getSequence(GraphHelper& graph);
 
-	typedef boost::shared_ptr<Node> Ptr;
-};
-
-struct Edge
-{
-
-};
-
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, Node, Edge> Graph;
 }
 
-#endif // RUBBLEGRAPH_H
+#endif // GRAPHUTILS_H

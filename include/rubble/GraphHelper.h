@@ -55,6 +55,10 @@ public:
 	GraphHelper();
 	~GraphHelper();
 
+	Node::Ptr getNode(std::string nodeID);
+	std::set<std::string> getParents(std::string nodeID);
+	std::set<std::string> getChildren(std::string nodeID);
+
 	/**
 	 * @brief Attempts to add a node to the graph.
 	 * If the node already exists, it returns the existing vertex.
@@ -69,6 +73,14 @@ public:
 	 */
 	Edge& addEdge(std::string from, std::string to);
 
+	std::set<std::string> getNodeIDs();
+	std::set<std::string> getIndependent();
+	std::vector<std::pair<unsigned int, std::string> > sortByDegree();
+
+	/**
+	 * @brief Creates a graphviz file string for the graph
+	 * @return
+	 */
 	std::string toDot();
 
 protected:

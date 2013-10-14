@@ -1,9 +1,9 @@
 /**
- * \file RubbleGraph.h
+ * \file GraphUtils.cpp
  * \brief
  *
  * \author Andrew Price
- * \date October 7, 2013
+ * \date 10 12, 2013
  *
  * \copyright
  *
@@ -38,30 +38,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RUBBLEGRAPH_H
-#define RUBBLEGRAPH_H
-
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/graph/adj_list_serialize.hpp>
-#include <boost/graph/filtered_graph.hpp>
+#include "rubble/GraphUtils.h"
 
 namespace rubble
 {
-
-struct Node
+std::vector<std::string> getSequence(GraphHelper& graph)
 {
-	std::string debrisName;
+	// Start at each node
+	std::set<std::string> nodeIDs = graph.getNodeIDs();
 
-	typedef boost::shared_ptr<Node> Ptr;
-};
+	for (std::string nodeID : nodeIDs)
+	{
+		Node::Ptr node = graph.getNode(nodeID);
+	}
 
-struct Edge
-{
+	// Follow the tree up to its root
 
-};
+	// Check for cycle
 
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, Node, Edge> Graph;
+	// If found, pick some part of the cycle as root
 }
-
-#endif // RUBBLEGRAPH_H
+}

@@ -53,6 +53,18 @@ GraphHelper::~GraphHelper()
 {
 }
 
+Node::Ptr GraphHelper::getNode(std::string nodeID)
+{
+	VertexMap::iterator iter = vertexMap.find(nodeID);
+	if (vertexMap.end() != iter)
+	{
+		Node* node = &(graph[iter->second]);
+		return Node::Ptr(node);
+	}
+
+	return Node::Ptr(); // Null pointer
+}
+
 Node& GraphHelper::addNode(std::string newNode)
 {
 	// Check our name map for whether the node exists
@@ -95,6 +107,93 @@ Edge& GraphHelper::addEdge(std::string from, std::string to)
 	return graph[eID];
 }
 
+std::set<std::string> GraphHelper::getParents(std::string nodeID)
+{
+	std::set<std::string> retVal;
+	VertexMap::iterator iter = vertexMap.find(nodeID);
+	if (vertexMap.end() == iter)
+	{
+		return retVal;
+	}
+
+	boost::graph_traits<Graph>::out_edge_iterator out_i, out_end;
+
+	for (boost::tie(out_i, out_end) = boost::out_edges(iter->second, graph);
+		 out_i != out_end;
+		 ++out_i)
+	{
+		Graph::vertex_descriptor toV = boost::target(*out_i, graph);
+		Node& toNode = graph[toV];
+		retVal.insert(toNode.debrisName);
+	}
+
+	return retVal;
+}
+
+std::set<std::string> GraphHelper::getChildren(std::string nodeID)
+{
+	std::set<std::string> retVal;
+	VertexMap::iterator iter = vertexMap.find(nodeID);
+	if (vertexMap.end() == iter)
+	{
+		return retVal;
+	}
+
+	boost::graph_traits<Graph>::in_edge_iterator in_i, in_end;
+
+	for (boost::tie(in_i, in_end) = boost::in_edges(iter->second, graph);
+		 in_i != in_end;
+		 ++in_i)
+	{
+		Graph::vertex_descriptor fromV = boost::target(*in_i, graph);
+		Node& toNode = graph[fromV];
+		retVal.insert(toNode.debrisName);
+	}
+
+	return retVal;
+}
+
+std::set<std::string> GraphHelper::getIndependent()
+{
+	std::set<std::string> retVal;
+
+	for (std::pair<std::string, Graph::vertex_descriptor> entry : vertexMap)
+	{
+		//std::cout << entry.first << ": " << boost::out_degree(entry.second, graph) << std::endl;
+		if (0 == boost::out_degree(entry.second, graph))
+		{
+			retVal.insert(entry.first);
+		}
+	}
+
+	return retVal;
+}
+
+std::vector<std::pair<unsigned int, std::string> > GraphHelper::sortByDegree()
+{
+	std::vector<std::pair<unsigned int, std::string> > retVal;
+
+	for (std::pair<std::string, Graph::vertex_descriptor> entry : vertexMap)
+	{
+		std::pair<unsigned int, std::string> newEntry(boost::out_degree(entry.second, graph), entry.first);
+		retVal.push_back(newEntry);
+	}
+
+	std::sort(retVal.begin(), retVal.end());
+
+	return retVal;
+}
+
+std::set<std::string> GraphHelper::getNodeIDs()
+{
+	std::set<std::string> retVal;
+	for (std::pair<std::string, Graph::vertex_descriptor> entry : vertexMap)
+	{
+		retVal.insert(entry.first);
+	}
+	return retVal;
+}
+
 std::string GraphHelper::toDot()
 {
 	std::ostringstream outfile;
@@ -103,8 +202,10 @@ std::string GraphHelper::toDot()
 
 	// Loop through all edges
 	Graph::edge_iterator edgeIt, edgeEnd;
-	boost::tie(edgeIt, edgeEnd) = boost::edges(graph);
-	for (; edgeIt != edgeEnd; ++edgeIt)
+
+	for (boost::tie(edgeIt, edgeEnd) = boost::edges(graph);
+		 edgeIt != edgeEnd;
+		 ++edgeIt)
 	{
 		Graph::vertex_descriptor fromV = boost::source(*edgeIt, graph);
 		Graph::vertex_descriptor toV = boost::target(*edgeIt, graph);

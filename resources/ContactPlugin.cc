@@ -48,7 +48,10 @@ void ContactPlugin::OnUpdate()
   contacts = this->parentSensor->GetContacts();
 
   // TODO: Don't publish duplicate states
-
+  if (contacts.contact_size() == 0)
+  {
+    return; //This shouldn't happen. :( 
+  }
   gazebo_msgs::ContactsState cs;
   for (unsigned int i = 0; i < contacts.contact_size(); ++i)
   {
