@@ -181,8 +181,8 @@ int main(int argc, char** argv)
 		req.reference_frame = "map";
 		req.model_xml = modelString;
 
-		req.initial_pose.position.x = randbetween(-1, 1);
-		req.initial_pose.position.y = randbetween(-1, 1);
+		req.initial_pose.position.x = randbetween(-0.5, 0.5);
+		req.initial_pose.position.y = randbetween(-0.5, 0.5);
 		req.initial_pose.position.z = 0.1 + randbetween(0,2);
 
 		req.initial_pose.orientation.w = randbetween(0,1);

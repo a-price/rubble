@@ -79,6 +79,13 @@ void ContactPlugin::OnUpdate()
 		  norm.z = contacts.contact(i).normal(j).z();
 
 		  geometry_msgs::Wrench w;
+		  // Throw out incidental contacts
+		  if (fabs(contacts.contact(i).wrench(j).body_1_wrench().force().z()) +
+			  fabs(contacts.contact(i).wrench(j).body_2_wrench().force().z()) < 0.1)
+		  {
+			  continue;
+		  }
+
 		  // Find which wrench points up; this ought to be the upper item
 		  if (contacts.contact(i).wrench(j).body_1_wrench().force().z() >
 			  contacts.contact(i).wrench(j).body_2_wrench().force().z())

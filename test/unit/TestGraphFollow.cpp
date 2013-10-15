@@ -64,6 +64,7 @@ public:
 		graphTree.addEdge("C", "B");
 		graphTree.addEdge("D", "B");
 		graphTree.addEdge("D", "A");
+		graphTree.addEdge("D", "A"); // Test duplication
 		graphs.push_back(graphTree);
 		std::cout << graphTree.toDot() << std::endl;
 
