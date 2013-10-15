@@ -55,6 +55,8 @@ public:
 		// Simple chain
 		rubble::GraphHelper graphChain;
 		graphChain.addEdge("B", "A");
+		graphChain.deleteNode("A");
+		graphChain.addEdge("B", "A");
 		graphChain.addEdge("C", "B");
 		graphs.push_back(graphChain);
 
