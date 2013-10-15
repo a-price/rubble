@@ -44,6 +44,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Float32.h>
+#include <std_srvs/Empty.h>
 #include <gazebo_msgs/GetWorldProperties.h>
 #include <gazebo_msgs/SpawnModel.h>
 #include <gazebo_msgs/DeleteModel.h>
@@ -172,6 +173,12 @@ int main(int argc, char** argv)
 		ROS_FATAL_STREAM("Unable to locate service '" << spawnClient.getService() << "'");
 	}
 
+	// Pause physics
+	ros::ServiceClient pauseSrvClient = nh.serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
+	std_srvs::EmptyRequest eReq;
+	std_srvs::EmptyResponse eResp;
+	pauseSrvClient.call(eReq, eResp);
+
 	for (int i = 0; i < 20; i++)
 	{
 		gazebo_msgs::SpawnModelRequest req;
@@ -181,19 +188,23 @@ int main(int argc, char** argv)
 		req.reference_frame = "map";
 		req.model_xml = modelString;
 
-		req.initial_pose.position.x = randbetween(-1, 1);
-		req.initial_pose.position.y = randbetween(-1, 1);
+		req.initial_pose.position.x = randbetween(-0.5, 0.5);
+		req.initial_pose.position.y = randbetween(-0.5, 0.5);
 		req.initial_pose.position.z = 0.1 + randbetween(0,2);
 
-		req.initial_pose.orientation.w = randbetween(0,1);
-		req.initial_pose.orientation.x = randbetween(0,1);
-		req.initial_pose.orientation.y = randbetween(0,1);
-		req.initial_pose.orientation.z = randbetween(0,1);
+		req.initial_pose.orientation.w = randbetween(-1,1);
+		req.initial_pose.orientation.x = randbetween(-1,1);
+		req.initial_pose.orientation.y = randbetween(-1,1);
+		req.initial_pose.orientation.z = randbetween(-1,1);
 
 		spawnClient.call(req,resp);
 
 		ROS_INFO_STREAM("Response:\n" << resp);
 	}
+
+	// Unpause Physics
+	ros::ServiceClient unpauseSrvClient = nh.serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
+	unpauseSrvClient.call(eReq, eResp);
 
 	ros::spinOnce();
 

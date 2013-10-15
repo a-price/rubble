@@ -10,9 +10,6 @@
  * Copyright (c) 2013, Georgia Tech Research Corporation
  * All rights reserved.
  *
- * Humanoid Robotics Lab Georgia Institute of Technology
- * Director: Mike Stilman http://www.golems.org
- *
  * This file is provided under the following "BSD-style" License:
  * Redistribution and use in source and binary forms, with or
  * without modification, are permitted provided that the following
@@ -87,6 +84,7 @@ Node& GraphHelper::addNode(std::string newNode)
 
 Edge& GraphHelper::addEdge(std::string from, std::string to)
 {
+	// Check if from exists
 	VertexMap::iterator iterA = vertexMap.find(from);
 	if (vertexMap.end() == iterA)
 	{
@@ -94,6 +92,7 @@ Edge& GraphHelper::addEdge(std::string from, std::string to)
 		iterA = vertexMap.find(from);
 	}
 
+	// Check if to exists
 	VertexMap::iterator iterB = vertexMap.find(to);
 	if (vertexMap.end() == iterB)
 	{
@@ -101,6 +100,22 @@ Edge& GraphHelper::addEdge(std::string from, std::string to)
 		iterB = vertexMap.find(to);
 	}
 
+	// Check if link going the opposite way already exists
+	boost::graph_traits<Graph>::out_edge_iterator out_i, out_end;
+	for (boost::tie(out_i, out_end) = boost::out_edges(vertexMap.at(to), graph);
+		 out_i != out_end;
+		 ++out_i)
+	{
+		Graph::vertex_descriptor toV = boost::target(*out_i, graph);
+		Node& toNode = graph[toV];
+		if (toNode.debrisName == from) // bidirectional dep is not allowed
+		{
+			std::cout << "Invalid Edge Error." << std::endl;
+			return graph[*out_i];
+		}
+	}
+
+	// Add the edge
 	std::pair<Graph::edge_descriptor, bool> e = boost::add_edge(iterA->second, iterB->second, graph);
 	Graph::edge_descriptor eID = e.first;
 
@@ -198,7 +213,7 @@ std::string GraphHelper::toDot()
 {
 	std::ostringstream outfile;
 	outfile << "digraph G {\n";
-	outfile << "rankdir=\"BT\";";
+	outfile << "rankdir=\"BT\";\n";
 
 	// Loop through all edges
 	Graph::edge_iterator edgeIt, edgeEnd;
@@ -209,8 +224,8 @@ std::string GraphHelper::toDot()
 	{
 		Graph::vertex_descriptor fromV = boost::source(*edgeIt, graph);
 		Graph::vertex_descriptor toV = boost::target(*edgeIt, graph);
-		Node & fromNode = graph[fromV];
-		Node & toNode = graph[toV];
+		Node& fromNode = graph[fromV];
+		Node& toNode = graph[toV];
 
 		outfile << fromNode.debrisName << "->" << toNode.debrisName << ";\n";
 	}

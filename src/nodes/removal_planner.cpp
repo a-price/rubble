@@ -10,9 +10,6 @@
  * Copyright (c) 2013, Georgia Tech Research Corporation
  * All rights reserved.
  *
- * Humanoid Robotics Lab Georgia Institute of Technology
- * Director: Mike Stilman http://www.golems.org
- *
  * This file is provided under the following "BSD-style" License:
  * Redistribution and use in source and binary forms, with or
  * without modification, are permitted provided that the following
@@ -145,7 +142,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 	if (ros::Time::now() > tLocked + tWait)
 	{
 		std::cerr << graph.toDot();
-		contactSub.shutdown();
+		ros::shutdown();
 	}
 }
 
