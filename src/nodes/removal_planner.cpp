@@ -44,13 +44,25 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 
+#include <std_msgs/Float64.h>
 #include <std_srvs/Empty.h>
 
 #include <gazebo_msgs/ContactsState.h>
 #include <gazebo_msgs/DeleteModel.h>
 #include <gazebo_msgs/ModelStates.h>
+#include <gazebo_msgs/SetModelState.h>
 
 #include "rubble/GraphHelper.h"
+
+/**
+ * @brief Motion below which is considered a static scene
+ */
+const double STABLE_THRESHOLD = 0.1;
+
+/**
+ * @brief Motion above which is considered a failed move
+ */
+const double UNSTABLE_THRESHOLD = 1.0;
 
 ros::NodeHandlePtr nh;
 ros::Subscriber contactSub;
@@ -65,6 +77,7 @@ bool stateIsLocked = false;
 bool trackMotion = false;
 gazebo_msgs::ModelStates currentState;
 std::deque<gazebo_msgs::ModelStates> stateLog;
+std::deque<std::string> ignoredModels; // Models that have been "deleted"
 
 std::string replace(const std::string& str, const std::string& from, const std::string& to)
 {
@@ -82,7 +95,7 @@ std::string proposeRemoval()
 	return graph.sortByDegree().begin()->second;
 }
 
-double removeAndEvaluate(std::string& id)
+void removeItem(std::string& id)
 {
 	// Pause physics
 	std_srvs::EmptyRequest eReq;
@@ -90,18 +103,11 @@ double removeAndEvaluate(std::string& id)
 	pauseSrvClient.call(eReq, eResp);
 
 	// Delete the model.
-	gazebo_msgs::DeleteModelRequest dreq;
-	gazebo_msgs::DeleteModelResponse dresp;
-
-	dreq.model_name = id;
-	deleteClient.call(dreq, dresp);
-
-	// Begin tracking
-	trackMotion = true;
+	ignoredModels.push_back(id);
+	// TODO: Delete from GraphHelper
 
 	// Re-enable Physics
 	unpauseSrvClient.call(eReq, eResp);
-	return 0;
 }
 
 void logMove()
@@ -129,6 +135,18 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 		std::string a = replace(contact.collision1_name, "::link::collision", "");
 		std::string b = replace(contact.collision2_name, "::link::collision", "");
 
+		// Don't add elements to the map that are "deleted"
+		for (std::deque<std::string>::iterator iter = ignoredModels.begin();
+			 iter != ignoredModels.end();
+			 ++iter)
+		{
+			if (a == *iter || b == *iter)
+			{
+				continue;
+			}
+		}
+
+		// Add the edge in the correct direction
 		if (contact.info == contact.collision1_name)
 		{
 			graph.addEdge(a, b);
@@ -153,12 +171,27 @@ void stateCallback(const gazebo_msgs::ModelStatesConstPtr states)
 
 }
 
+void movementCallback(const std_msgs::Float64ConstPtr motion)
+{
+	if (motion->data < STABLE_THRESHOLD)
+	{
+		logMove();
+		std::string nextPiece = proposeRemoval();
+		removeItem(nextPiece);
+	}
+	else if (motion->data > UNSTABLE_THRESHOLD)
+	{
+		undoMove();
+		// Mark that attempt as failed somehow
+	}
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "removal_planner");
 	nh.reset(new ros::NodeHandle);
 
-	sleep(5);
+	sleep(15);
 
 	tLocked = ros::Time::now();
 	tWait = ros::Duration(5, 0);

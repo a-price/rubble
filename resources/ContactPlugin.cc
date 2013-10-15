@@ -81,7 +81,7 @@ void ContactPlugin::OnUpdate()
 		  geometry_msgs::Wrench w;
 		  // Throw out incidental contacts
 		  if (fabs(contacts.contact(i).wrench(j).body_1_wrench().force().z()) +
-			  fabs(contacts.contact(i).wrench(j).body_2_wrench().force().z()) < 0.1)
+			  fabs(contacts.contact(i).wrench(j).body_2_wrench().force().z()) < 5.0)
 		  {
 			  continue;
 		  }

@@ -110,7 +110,6 @@ Edge& GraphHelper::addEdge(std::string from, std::string to)
 		Node& toNode = graph[toV];
 		if (toNode.debrisName == from) // bidirectional dep is not allowed
 		{
-			std::cout << "Invalid Edge Error." << std::endl;
 			return graph[*out_i];
 		}
 	}
