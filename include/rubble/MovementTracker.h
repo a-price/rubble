@@ -10,7 +10,7 @@ namespace rubble
 class MovementTracker
 {
 public:
-	MovementTracker();
+	MovementTracker(ros::NodeHandle& _nh);
 	std::vector<double> IntegrateMovement(gazebo_msgs::ModelStates);
 private:
 	ros::Publisher mstatesPub;

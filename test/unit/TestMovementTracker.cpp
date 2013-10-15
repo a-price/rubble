@@ -57,6 +57,8 @@ public:
 
 	virtual void setUp()
 	{
+		ros::init(ros::M_string(), "testMovementTracker");
+
 		//Board with zero velocity
 
 		std::string staysPutName = "staysPut";
@@ -113,8 +115,8 @@ public:
 
 	void TestMakeSequence()
 	{
-
-		rubble::MovementTracker mt;
+		ros::NodeHandle nh;
+		rubble::MovementTracker mt(nh);
 		std::vector<double> moved;
 		double m;
 		std::cout << std::endl;
@@ -127,8 +129,6 @@ public:
 		}
 	}
 };
-
-ros::init(argc, argv, "testMovementTracker");//I'm not sure whether this actually needs to be here, but it still is missing something needed to run. Without this it will run but fail claiming that it needed a ros::init() before the first NodeHandle.
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestMovementTracker);
 

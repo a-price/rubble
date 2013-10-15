@@ -6,7 +6,8 @@
 namespace rubble
 {
 
-	MovementTracker::MovementTracker()
+	MovementTracker::MovementTracker(ros::NodeHandle& _nh)
+		: nh(_nh)
 	{
 	}
 
