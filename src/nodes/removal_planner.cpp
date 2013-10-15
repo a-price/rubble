@@ -39,19 +39,32 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <deque>
 
 #include <ros/ros.h>
 #include <ros/package.h>
 
-#include "gazebo_msgs/ContactsState.h"
+#include <std_srvs/Empty.h>
+
+#include <gazebo_msgs/ContactsState.h>
+#include <gazebo_msgs/DeleteModel.h>
+#include <gazebo_msgs/ModelStates.h>
 
 #include "rubble/GraphHelper.h"
 
+ros::NodeHandlePtr nh;
 ros::Subscriber contactSub;
+ros::Subscriber stateSub;
+ros::ServiceClient deleteClient;
+ros::ServiceClient pauseSrvClient;
+ros::ServiceClient unpauseSrvClient;
 rubble::GraphHelper graph;
 ros::Time tLocked;
 ros::Duration tWait;
-
+bool stateIsLocked = false;
+bool trackMotion = false;
+gazebo_msgs::ModelStates currentState;
+std::deque<gazebo_msgs::ModelStates> stateLog;
 
 std::string replace(const std::string& str, const std::string& from, const std::string& to)
 {
@@ -63,8 +76,49 @@ std::string replace(const std::string& str, const std::string& from, const std::
 	return copy;
 }
 
+std::string proposeRemoval()
+{
+	// return the most likely node to be freeable
+	return graph.sortByDegree().begin()->second;
+}
+
+double removeAndEvaluate(std::string& id)
+{
+	// Pause physics
+	std_srvs::EmptyRequest eReq;
+	std_srvs::EmptyResponse eResp;
+	pauseSrvClient.call(eReq, eResp);
+
+	// Delete the model.
+	gazebo_msgs::DeleteModelRequest dreq;
+	gazebo_msgs::DeleteModelResponse dresp;
+
+	dreq.model_name = id;
+	deleteClient.call(dreq, dresp);
+
+	// Begin tracking
+	trackMotion = true;
+
+	// Re-enable Physics
+	unpauseSrvClient.call(eReq, eResp);
+	return 0;
+}
+
+void logMove()
+{
+	stateLog.push_back(currentState);
+}
+
+void undoMove()
+{
+	// Respawn world to checkpoint
+	gazebo_msgs::ModelStates prevStates = stateLog.at(stateLog.size()-1);
+	stateLog.pop_back();
+}
+
 void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 {
+	if (stateIsLocked) { return; }
 	if (0 == contacts->states.size()) {	return;	}
 
 	// Find names of all debris pieces touching
@@ -92,17 +146,28 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 	}
 }
 
+void stateCallback(const gazebo_msgs::ModelStatesConstPtr states)
+{
+	currentState = *states;
+	if (!trackMotion) { return; }
+
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "removal_planner");
-	ros::NodeHandle nh;
+	nh.reset(new ros::NodeHandle);
 
 	sleep(5);
 
 	tLocked = ros::Time::now();
 	tWait = ros::Duration(5, 0);
 
-	contactSub = nh.subscribe("/gazebo/contacts", 1, &contactCallback);
+	deleteClient = nh->serviceClient<gazebo_msgs::DeleteModel>("/gazebo/delete_model");
+	contactSub = nh->subscribe("/gazebo/contacts", 1, &contactCallback);
+	stateSub = nh->subscribe("/gazebo/model_states", 1, &stateCallback);
+	pauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
+	unpauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
 
 	ros::spin();
 
