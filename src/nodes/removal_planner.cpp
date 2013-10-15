@@ -49,6 +49,7 @@
 #include <gazebo_msgs/ContactsState.h>
 #include <gazebo_msgs/DeleteModel.h>
 #include <gazebo_msgs/ModelStates.h>
+#include <gazebo_msgs/ModelState.h>
 
 #include "rubble/GraphHelper.h"
 
@@ -58,6 +59,7 @@ ros::Subscriber stateSub;
 ros::ServiceClient deleteClient;
 ros::ServiceClient pauseSrvClient;
 ros::ServiceClient unpauseSrvClient;
+ros::ServiceClient setStateSrvClient;
 rubble::GraphHelper graph;
 ros::Time tLocked;
 ros::Duration tWait;
@@ -114,6 +116,17 @@ void undoMove()
 	// Respawn world to checkpoint
 	gazebo_msgs::ModelStates prevStates = stateLog.at(stateLog.size()-1);
 	stateLog.pop_back();
+
+	for (int i = 0; i < prevStates.name.size(); i++)
+	{
+		gazebo_msgs::ModelState ms;
+		ms.model_name = prevStates.name[i];
+		ms.pose = prevStates.pose[i];
+		ms.twist = prevStates.twist[i];
+		ms.reference_frame = "";
+
+		//setStateSrvClient.call
+	}
 }
 
 void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
@@ -141,7 +154,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 
 	if (ros::Time::now() > tLocked + tWait)
 	{
-		std::cerr << graph.toDot();
+		std::cerr << graph.toDot() << std::endl;
 		ros::shutdown();
 	}
 }
@@ -168,6 +181,7 @@ int main(int argc, char** argv)
 	stateSub = nh->subscribe("/gazebo/model_states", 1, &stateCallback);
 	pauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
 	unpauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
+	setStateSrvClient = nh->serviceClient<gazebo_msgs::ModelState>("/gazebo/set_model_state");
 
 	ros::spin();
 
