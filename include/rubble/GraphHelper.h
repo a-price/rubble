@@ -66,6 +66,8 @@ public:
 	 */
 	Node& addNode(std::string);
 
+	bool deleteNode(std::string);
+
 	/**
 	 * @brief Attempts to add an edge between the two nodes specified by the strings.
 	 * If either node does not exist, it is created.

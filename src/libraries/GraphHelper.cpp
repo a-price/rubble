@@ -82,6 +82,22 @@ Node& GraphHelper::addNode(std::string newNode)
 	return node;
 }
 
+bool GraphHelper::deleteNode(std::string node)
+{
+	VertexMap::iterator iter = vertexMap.find(node);
+	if (vertexMap.end() == iter)
+	{
+		// No node to remove
+		return false;
+	}
+
+	boost::remove_vertex(iter->second, graph);
+
+	vertexMap.erase(iter);
+
+	return true;
+}
+
 Edge& GraphHelper::addEdge(std::string from, std::string to)
 {
 	// Check if from exists
