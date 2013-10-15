@@ -53,14 +53,11 @@ class TestMovementTracker : public CppUnit::TestFixture
 	CPPUNIT_TEST_SUITE_END();
 public:
 
-//	std::vector<gazebo_msgs::ModelStates> states;
 	gazebo_msgs::ModelStates states;
 
 	virtual void setUp()
 	{
 		//Board with zero velocity
-//		gazebo_msgs::ModelStates staysPut;
-//		rubble::MovementTracker mtStaysPut;
 
 		std::string staysPutName = "staysPut";
 
@@ -81,17 +78,11 @@ public:
 		TwistA.angular.y = 0.0;
 		TwistA.angular.z = 0.0;
 
-//		gazebo_msgs::ModelStates msStaysPut;
 		states.name.push_back(staysPutName);
 		states.pose.push_back(PoseA);
 		states.twist.push_back(TwistA);
 
-//		mtStaysPut.MovementTracker::IntegrateMovement(staysPut);
-//		states.push_back(staysPut);
-
 		// Stationary Board
-//		gazebo_msgs::ModelStates moves;
-//		rubble::MovementTracker mtMoves;
 
 		std::string movesName = "moves";
 
@@ -112,13 +103,9 @@ public:
 		TwistB.angular.y = 5.0;
 		TwistB.angular.z = 6.0;
 
-//		gazebo_msgs::ModelStates msMoves;
 		states.name.push_back(movesName);
 		states.pose.push_back(PoseB);
 		states.twist.push_back(TwistB);
-
-//		mtMoves.MovementTracker::IntegrateMovement(moves);
-//		states.push_back(moves);
 
 	}
 
@@ -140,6 +127,8 @@ public:
 		}
 	}
 };
+
+ros::init(argc, argv, "testMovementTracker");//I'm not sure whether this actually needs to be here, but it still is missing something needed to run. Without this it will run but fail claiming that it needed a ros::init() before the first NodeHandle.
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestMovementTracker);
 
