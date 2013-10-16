@@ -44,7 +44,8 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 
-#include <std_msgs/Float64.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 #include <std_srvs/Empty.h>
 
 #include <gazebo_msgs/ContactsState.h>
@@ -57,16 +58,19 @@
 /**
  * @brief Motion below which is considered a static scene
  */
-const double STABLE_THRESHOLD = 0.1;
+const double STABLE_THRESHOLD = 0.8;
 
 /**
  * @brief Motion above which is considered a failed move
  */
-const double UNSTABLE_THRESHOLD = 1.0;
+const double UNSTABLE_THRESHOLD = 10.0;
 
 ros::NodeHandlePtr nh;
 ros::Subscriber contactSub;
 ros::Subscriber stateSub;
+ros::Subscriber motionSub;
+ros::Publisher ignorePub;
+ros::Publisher regardPub;
 ros::ServiceClient deleteClient;
 ros::ServiceClient pauseSrvClient;
 ros::ServiceClient unpauseSrvClient;
@@ -74,7 +78,7 @@ ros::ServiceClient resetClient;
 rubble::GraphHelper graph;
 ros::Time tLocked;
 ros::Duration tWait;
-bool stateIsLocked = false;
+bool isGatheringContactInfo = true;
 bool isUninitialized = true;
 
 gazebo_msgs::ModelStates currentState;
@@ -101,8 +105,17 @@ std::string replace(const std::string& str, const std::string& from, const std::
 	return copy;
 }
 
+void rebuildContactGraph()
+{
+	// Delete the contact graph
+	graph = rubble::GraphHelper();
+	tLocked = ros::Time::now();
+	isGatheringContactInfo = true;
+}
+
 std::string proposeRemoval()
 {
+	std::cerr << "Proposing..." << std::endl;
 	// return the most likely node to be freeable
 	std::vector<std::pair<unsigned int, std::string> > suggestions = graph.sortByDegree();
 	for (std::vector<std::pair<unsigned int, std::string> >::iterator iter = suggestions.begin();
@@ -125,6 +138,7 @@ std::string proposeRemoval()
 
 void removeItem(std::string& id)
 {
+	std::cerr << "Deleting" << std::endl;
 	// Pause physics
 	std_srvs::EmptyRequest eReq;
 	std_srvs::EmptyResponse eResp;
@@ -138,12 +152,20 @@ void removeItem(std::string& id)
 	gazebo_msgs::SetModelStateRequest req;
 	gazebo_msgs::SetModelStateResponse resp;
 	req.model_state.model_name = id;
-	req.model_state.pose.position.x = 10;
+	req.model_state.pose.position.x = 5;
 	req.model_state.pose.position.z = 1;
 	resetClient.call(req, resp);
 
 	// One more item removed
 	removalDepth++;
+
+	// Un-track motion
+	std_msgs::String msg;
+	msg.data = id;
+	ignorePub.publish(msg);
+
+	// Rebuild the contact graph
+	rebuildContactGraph();
 
 	// Re-enable Physics
 	unpauseSrvClient.call(eReq, eResp);
@@ -151,11 +173,13 @@ void removeItem(std::string& id)
 
 void logMove()
 {
+	std::cerr << "Logging" << std::endl;
 	stateLog.push_back(currentState);
 }
 
 void undoMove()
 {
+	std::cerr << "Reverting" << std::endl;
 	// Respawn world to checkpoint
 	gazebo_msgs::ModelStates prevStates = stateLog.at(stateLog.size()-1);
 	stateLog.pop_back();
@@ -175,22 +199,38 @@ void undoMove()
 	// One less item removed
 	removalDepth--;
 
+	std::string attempted = ignoredModels.at(ignoredModels.size()-1);
+
 	// Mark as failed
-	failedModels[removalDepth].insert(ignoredModels.at(ignoredModels.size()-1));
+	failedModels[removalDepth].insert(attempted);
+
+	// Re-track motion
+	std_msgs::String msg;
+	msg.data = attempted;
+	regardPub.publish(msg);
 
 	// Restore the item's standing
 	ignoredModels.pop_back();
+
+	// Rebuild the contact graph
+	rebuildContactGraph();
 }
 
 void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 {
-	if (stateIsLocked) { return; }
+	if (!isGatheringContactInfo) { return; }
 	if (0 == contacts->states.size()) {	return;	}
 
 	// Find names of all debris pieces touching
 	for (int i = 0; i < contacts->states.size(); i++)
 	{
 		const gazebo_msgs::ContactState contact = contacts->states[i];
+
+		if (contact.collision1_name == "" || contact.collision2_name == "")
+		{
+			std::cerr << "WTF?" << std::endl;
+			continue;
+		}
 
 		std::string a = replace(contact.collision1_name, "::link::collision", "");
 		std::string b = replace(contact.collision2_name, "::link::collision", "");
@@ -220,7 +260,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 	if (ros::Time::now() > tLocked + tWait)
 	{
 		std::cerr << graph.toDot();
-		ros::shutdown();
+		isGatheringContactInfo = false;
 	}
 }
 
@@ -232,11 +272,12 @@ void stateCallback(const gazebo_msgs::ModelStatesConstPtr states)
 		failedModels.resize(states->name.size());
 		isUninitialized = false;
 	}
-
 }
 
-void movementCallback(const std_msgs::Float64ConstPtr motion)
+void movementCallback(const std_msgs::Float32ConstPtr motion)
 {
+	if (isGatheringContactInfo) { return; }
+
 	if (motion->data < STABLE_THRESHOLD)
 	{
 		std::string nextPiece = proposeRemoval();
@@ -261,11 +302,15 @@ int main(int argc, char** argv)
 	sleep(15);
 
 	tLocked = ros::Time::now();
-	tWait = ros::Duration(5, 0);
+	tWait = ros::Duration(1, 0);
+	isGatheringContactInfo = true;
 
 	deleteClient = nh->serviceClient<gazebo_msgs::DeleteModel>("/gazebo/delete_model");
 	contactSub = nh->subscribe("/gazebo/contacts", 1, &contactCallback);
 	stateSub = nh->subscribe("/gazebo/model_states", 1, &stateCallback);
+	motionSub = nh->subscribe("/motion_tracker/net_motion", 1, &movementCallback);
+	ignorePub = nh->advertise<std_msgs::String>("/motion_tracker/ignore_model", 1);
+	regardPub = nh->advertise<std_msgs::String>("/motion_tracker/regard_model", 1);
 	pauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
 	unpauseSrvClient = nh->serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
 	resetClient = nh->serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");

@@ -36,15 +36,28 @@
  */
 
 #include <rubble/MovementTracker.h>
+#include <std_msgs/String.h>
 
 boost::shared_ptr<rubble::MovementTracker> mt;
 
 ros::Subscriber stateSub;
 ros::Publisher motionPub;
+ros::Subscriber ignoreServer;
+ros::Subscriber regardServer;
 
 void stateCallback(const gazebo_msgs::ModelStatesPtr states)
 {
 	mt->IntegrateMovement(*states);
+}
+
+void ignoreCallback(const std_msgs::StringConstPtr name)
+{
+	mt->ignoreModel(name->data);
+}
+
+void regardCallback(const std_msgs::StringConstPtr name)
+{
+	mt->regardModel(name->data);
 }
 
 int main(int argc, char** argv)
@@ -55,6 +68,8 @@ int main(int argc, char** argv)
 	mt.reset(new rubble::MovementTracker(nh));
 
 	stateSub = nh.subscribe("/gazebo/model_states", 1, &stateCallback);
+	ignoreServer = nh.subscribe("/motion_tracker/ignore_model", 1, &ignoreCallback);
+	regardServer = nh.subscribe("/motion_tracker/regard_model", 1,  &regardCallback);
 
 	ros::spin();
 

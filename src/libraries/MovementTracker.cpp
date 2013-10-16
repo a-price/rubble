@@ -11,7 +11,7 @@ namespace rubble
 	{
 		ignoreModels.insert("ground_plane");
 
-		mstatesPub = nh.advertise<std_msgs::Float32>("/tracked_motion", 1);
+		mstatesPub = nh.advertise<std_msgs::Float32>("/motion_tracker/net_motion", 1);
 
 		// Make physics pausable/unpausable
 		pauseSrvClient = nh.serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
@@ -65,4 +65,15 @@ namespace rubble
 
 		return totalMove;
 	}
+
+	void MovementTracker::ignoreModel(const std::string name)
+	{
+		ignoreModels.insert(name);
+	}
+
+	void MovementTracker::regardModel(const std::string name)
+	{
+		ignoreModels.erase(name);
+	}
+
 }// namespace rubble

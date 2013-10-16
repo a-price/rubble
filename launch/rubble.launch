@@ -1,0 +1,6 @@
+<launch>
+	<node name="motion_tracker" pkg="rubble" type="motion_tracker" />
+	<node name="random_spawn" pkg="rubble" type="random_spawn" />
+	<node name="removal_planner" pkg="rubble" type="removal_planner" output="screen"/>
+	
+</launch>

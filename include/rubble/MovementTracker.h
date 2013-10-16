@@ -12,6 +12,9 @@ class MovementTracker
 public:
 	MovementTracker(ros::NodeHandle& _nh);
 	double IntegrateMovement(gazebo_msgs::ModelStates);
+
+	void ignoreModel(const std::string name);
+	void regardModel(const std::string name);
 private:
 	ros::Publisher mstatesPub;
 	ros::NodeHandle nh;

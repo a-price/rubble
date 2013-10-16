@@ -245,7 +245,7 @@ std::string GraphHelper::toDot()
 		outfile << fromNode.debrisName << "->" << toNode.debrisName << ";\n";
 	}
 
-	outfile << "}";
+	outfile << "}\n";
 
 	return outfile.str();
 }
