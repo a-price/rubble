@@ -157,6 +157,8 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "random_spawn");
 	ros::NodeHandle nh;
 
+	srand (time(NULL));
+
 	zPub = nh.advertise<std_msgs::Float32>("/z",1);
 	ros::Subscriber stateSub = nh.subscribe("/gazebo/model_states", 1, &stateCallback);
 
@@ -179,7 +181,7 @@ int main(int argc, char** argv)
 	std_srvs::EmptyResponse eResp;
 	pauseSrvClient.call(eReq, eResp);
 
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		gazebo_msgs::SpawnModelRequest req;
 		gazebo_msgs::SpawnModelResponse resp;
@@ -190,7 +192,7 @@ int main(int argc, char** argv)
 
 		req.initial_pose.position.x = randbetween(-0.5, 0.5);
 		req.initial_pose.position.y = randbetween(-0.5, 0.5);
-		req.initial_pose.position.z = 0.1 + randbetween(0,2);
+		req.initial_pose.position.z = 0.9 + randbetween(0,2);
 
 		req.initial_pose.orientation.w = randbetween(-1,1);
 		req.initial_pose.orientation.x = randbetween(-1,1);

@@ -49,6 +49,7 @@ namespace rubble
 			totalMove += fabs(t.angular.x)*0.01;//multiply by scaling factor (this is in radians); using scaling factor of 1 cm
 			totalMove += fabs(t.angular.y)*0.01;
 			totalMove += fabs(t.angular.z)*0.01;
+			if (totalMove != totalMove) {std::cerr << "NaN Error." << std::endl; }
 		}
 
 		sumAllMove.data = totalMove;

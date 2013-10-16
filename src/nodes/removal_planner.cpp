@@ -115,7 +115,15 @@ void rebuildContactGraph()
 
 std::string proposeRemoval()
 {
-	std::cerr << "Proposing..." << std::endl;
+	std::cerr << "Proposing...";
+
+	std::vector<std::pair<unsigned int, std::string> > order = graph.sortByDegree();
+	for (int i = 0; i < order.size(); i++)
+	{
+		std::pair<unsigned int, std::string>& item = order[i];
+		std::cout << item.second << ": " << item.first << std::endl;
+	}
+
 	// return the most likely node to be freeable
 	std::vector<std::pair<unsigned int, std::string> > suggestions = graph.sortByDegree();
 	for (std::vector<std::pair<unsigned int, std::string> >::iterator iter = suggestions.begin();
@@ -153,7 +161,12 @@ void removeItem(std::string& id)
 	gazebo_msgs::SetModelStateResponse resp;
 	req.model_state.model_name = id;
 	req.model_state.pose.position.x = 5;
-	req.model_state.pose.position.z = 1;
+	req.model_state.pose.position.y = 1;
+	req.model_state.pose.position.z = 2;
+	req.model_state.pose.orientation.w = 1;
+	req.model_state.pose.orientation.x = 0;
+	req.model_state.pose.orientation.y = 0;
+	req.model_state.pose.orientation.z = 0;
 	resetClient.call(req, resp);
 
 	// One more item removed
@@ -179,6 +192,11 @@ void logMove()
 
 void undoMove()
 {
+	if (removalDepth < 1)
+	{
+		std::cerr << "Already at root removal." << std::endl;
+		return;
+	}
 	std::cerr << "Reverting" << std::endl;
 	// Respawn world to checkpoint
 	gazebo_msgs::ModelStates prevStates = stateLog.at(stateLog.size()-1);
@@ -235,6 +253,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 		std::string a = replace(contact.collision1_name, "::link::collision", "");
 		std::string b = replace(contact.collision2_name, "::link::collision", "");
 
+		bool isIgnored = false;
 		// Don't add elements to the map that are "deleted"
 		for (std::deque<std::string>::iterator iter = ignoredModels.begin();
 			 iter != ignoredModels.end();
@@ -242,9 +261,12 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 		{
 			if (a == *iter || b == *iter)
 			{
-				continue;
+				isIgnored = true;
+				break;
 			}
 		}
+
+		if (isIgnored) {continue;}
 
 		// Add the edge in the correct direction
 		if (contact.info == contact.collision1_name)
@@ -259,8 +281,11 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 
 	if (ros::Time::now() > tLocked + tWait)
 	{
-		std::cerr << graph.toDot();
 		isGatheringContactInfo = false;
+		std::ofstream os;
+		os.open("/home/arprice/graphs/graph" + std::to_string(removalDepth) + ".dot");
+		os << graph.toDot();
+		os.close();
 	}
 }
 
@@ -285,6 +310,7 @@ void movementCallback(const std_msgs::Float32ConstPtr motion)
 		{
 			return;
 		}
+		std::cerr << nextPiece << std::endl;
 		logMove();
 		removeItem(nextPiece);
 	}
