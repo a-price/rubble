@@ -24,6 +24,9 @@ private:
 
 	std::set<std::string> ignoreModels;
 
+	double runningAverage;
+	const double windowSize;
+
 };
 }
 #endif // MOVEMENTTRACKER_H

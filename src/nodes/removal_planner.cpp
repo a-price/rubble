@@ -58,17 +58,19 @@
 /**
  * @brief Motion below which is considered a static scene
  */
-const double STABLE_THRESHOLD = 0.6;
+const double STABLE_THRESHOLD = 0.05;
 
 /**
- * @brief Motion below which is considered a static scene
+ * @brief Motion below which is considered a static scene after dropping
  */
-const double INITIAL_THRESHOLD = 0.8;
+const double INITIAL_THRESHOLD = 0.075;
 
 /**
  * @brief Motion above which is considered a failed move
  */
-const double UNSTABLE_THRESHOLD = 2.0;
+const double UNSTABLE_THRESHOLD = 0.1;
+
+const int MIN_STABLE_SAMPLES = 10;
 
 ros::NodeHandlePtr nh;
 ros::Subscriber contactSub;
@@ -81,8 +83,12 @@ ros::ServiceClient pauseSrvClient;
 ros::ServiceClient unpauseSrvClient;
 ros::ServiceClient resetClient;
 rubble::GraphHelper graph;
+
 ros::Time tLocked;
 ros::Duration tWait;
+
+int stableCount = 0;
+
 bool isGatheringContactInfo = true;
 bool isUninitialized = true;
 bool isInitialDrop = true;
@@ -211,6 +217,8 @@ void removeItem(std::string& id)
 	// One more item removed
 	removalDepth++;
 
+	stableCount = 0;
+
 	// Un-track motion
 	std_msgs::String msg;
 	msg.data = id;
@@ -268,6 +276,8 @@ void undoMove()
 
 	// Restore the item's standing
 	deletedModels.pop_back();
+
+	stableCount = 0;
 
 	// Rebuild the contact graph
 	rebuildContactGraph();
@@ -341,25 +351,38 @@ void stateCallback(const gazebo_msgs::ModelStatesConstPtr states)
 void movementCallback(const std_msgs::Float32ConstPtr motion)
 {
 	if (isGatheringContactInfo) { return; }
-
+	std::cerr << stableCount << " ";
 	if (motion->data < STABLE_THRESHOLD)
 	{
-		std::string nextPiece = proposeRemoval();
-		if (nextPiece == "")
+		stableCount++;
+
+		if (stableCount > MIN_STABLE_SAMPLES)
 		{
-			return;
+			std::string nextPiece = proposeRemoval();
+			if (nextPiece == "")
+			{
+				return;
+			}
+			std::cerr << nextPiece << std::endl;
+			logMove();
+			removeItem(nextPiece);
 		}
-		std::cerr << nextPiece << std::endl;
-		logMove();
-		removeItem(nextPiece);
+		isInitialDrop = false;
 	}
 	else if (isInitialDrop && motion->data > INITIAL_THRESHOLD)
 	{
+		std::cerr << "Setting initial drop false." << std::cerr;
 		isInitialDrop = false;
 	}
 	else if ((!isInitialDrop) && motion->data > UNSTABLE_THRESHOLD)
 	{
+		std::cerr << "UNSTABLE!!" << std::endl;
+		stableCount = 0;
 		undoMove();
+	}
+	else
+	{
+		stableCount = 0;
 	}
 }
 
