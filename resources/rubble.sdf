@@ -17,6 +17,8 @@
 					<box>
 						<size>1 0.0381 .0889</size>
 					</box>
+			
+				
 				</geometry>
 				<material>
 					<ambient>0.6 0.3 0 1</ambient>
@@ -32,10 +34,13 @@
 					</box>
 				</geometry>
 				<surface>
+					<bounce>
+						<restitution_coefficient>0</restitution_coefficient>
+					</bounce>
 					<friction>
 						<ode>
-							<mu>5</mu>
-							<mu2>5</mu2>
+							<mu>1</mu>
+							<mu2>1</mu2>
 							<slip1>0.0</slip1>
 							<slip2>0.0</slip2>
 						</ode>
