@@ -246,7 +246,7 @@ void undoMove()
 {
 	if (removalDepth < 1)
 	{
-		std::cerr << "Already at root removal." << std::endl;
+//		std::cerr << "Already at root removal." << std::endl;
 		return;
 	}
 	std::cerr << "Reverting" << std::endl;
@@ -324,13 +324,20 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 
 		// Find the correct direction
 		// Create the intersection ray
+		if (contact.contact_positions.size() < 1)
+		{
+//			std::cerr << "WTF?" << std::endl;
+			continue;
+		}
 		ap::Ray z;
-		z.point.x() = contact.contact_positions[0].x;
-		z.point.y() = contact.contact_positions[0].y;
-		z.point.z() = -1;
+//		z.point.x() = contact.contact_positions[0].x;
+//		z.point.y() = contact.contact_positions[0].y;
+		z.point.z() = 1;
 		z.vector.x() = 0;
 		z.vector.y() = 0;
-		z.vector.z() = 1;
+		z.vector.z() = -1;
+
+		ap::Ray za = z, zb = z;
 
 		// Rotate the meshes into place
 		ap::Mesh aMesh, bMesh;
@@ -339,10 +346,18 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 			if (currentState.name[i] == a)
 			{
 				aMesh = ap::toIsometry(currentState.pose[i]) * defaultMesh;
+				za.point.x() = contact.contact_positions[0].x +
+						(currentState.pose[i].position.x - contact.contact_positions[0].x)/4;
+				za.point.y() = contact.contact_positions[0].y+
+						(currentState.pose[i].position.y - contact.contact_positions[0].y)/4;
 			}
 			else if (currentState.name[i] == b)
 			{
 				bMesh = ap::toIsometry(currentState.pose[i]) * defaultMesh;
+				zb.point.x() = contact.contact_positions[0].x +
+						(currentState.pose[i].position.x - contact.contact_positions[0].x)/4;
+				zb.point.y() = contact.contact_positions[0].y+
+						(currentState.pose[i].position.y - contact.contact_positions[0].y)/4;
 			}
 		}
 
@@ -354,7 +369,7 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 			ap::Triangle triangle(aMesh.vertices[aMesh.faces[i].vertices[0]],
 								  aMesh.vertices[aMesh.faces[i].vertices[1]],
 								  aMesh.vertices[aMesh.faces[i].vertices[2]]);
-			Eigen::Vector3f intersection = ap::intersectRayTriangle(z, triangle);
+			Eigen::Vector3f intersection = ap::intersectRayTriangle(za, triangle);
 			if (std::isfinite(intersection.z()))
 			{
 				if (intersection.z() > aMax) { aMax = intersection.z(); }
@@ -366,13 +381,20 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 			ap::Triangle triangle(bMesh.vertices[bMesh.faces[i].vertices[0]],
 								  bMesh.vertices[bMesh.faces[i].vertices[1]],
 								  bMesh.vertices[bMesh.faces[i].vertices[2]]);
-			Eigen::Vector3f intersection = ap::intersectRayTriangle(z, triangle);
+			Eigen::Vector3f intersection = ap::intersectRayTriangle(zb, triangle);
 			if (std::isfinite(intersection.z()))
 			{
 				if (intersection.z() > bMax) { bMax = intersection.z(); }
 			}
 		}
-
+		if (aMax == 0 || bMax == 0)
+		{
+			std::cerr << "----No intersection, apparently.----" << std::endl;
+		}
+		else
+		{
+			std::cerr << "----INTERSECTION.----" << std::endl;
+		}
 
 		// Add the edge in the correct direction
 		if (aMax < bMax)
@@ -433,7 +455,7 @@ void movementCallback(const std_msgs::Float32ConstPtr motion)
 	}
 	else if ((!isInitialDrop) && motion->data > UNSTABLE_THRESHOLD)
 	{
-		std::cerr << "UNSTABLE!!" << std::endl;
+//		std::cerr << "UNSTABLE!!" << std::endl;
 		stableCount = 0;
 		undoMove();
 	}
@@ -459,7 +481,7 @@ int main(int argc, char** argv)
 	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, dy, dz));
 	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, dy, -dz));
 	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, -dy, dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, -dy, dz));
+	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, -dy, -dz));
 	defaultMesh.faces.push_back(ap::Mesh::Face(1,2,3));
 	defaultMesh.faces.push_back(ap::Mesh::Face(2,3,4));
 	defaultMesh.faces.push_back(ap::Mesh::Face(2,4,6));
