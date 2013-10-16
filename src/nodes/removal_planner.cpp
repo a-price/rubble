@@ -83,7 +83,7 @@ bool isUninitialized = true;
 
 gazebo_msgs::ModelStates currentState;
 std::deque<gazebo_msgs::ModelStates> stateLog;
-std::deque<std::string> ignoredModels; // Models that have been "deleted"
+std::deque<std::string> deletedModels; // Models that have been "deleted"
 
 // Monitor what's worked and what hasn't
 int removalDepth = 0;
@@ -116,16 +116,49 @@ void rebuildContactGraph()
 std::string proposeRemoval()
 {
 	std::cerr << "Proposing...";
-
-	std::vector<std::pair<unsigned int, std::string> > order = graph.sortByDegree();
-	for (int i = 0; i < order.size(); i++)
+	// Check for victory condition
+	std::cerr << deletedModels.size() << ">=" << currentState.name.size() << std::endl;
+	if (deletedModels.size() >= currentState.name.size()-2)
 	{
-		std::pair<unsigned int, std::string>& item = order[i];
-		std::cout << item.second << ": " << item.first << std::endl;
+		std::cerr << "Path found." << std::endl;
+		ros::shutdown();
 	}
 
-	// return the most likely node to be freeable
+	// Find unattached objects
 	std::vector<std::pair<unsigned int, std::string> > suggestions = graph.sortByDegree();
+	for (int i = 0; i < currentState.name.size(); i++)
+	{
+		bool isInContact = false;
+		std::string stateName = currentState.name[i];
+		for (std::vector<std::pair<unsigned int, std::string> >::iterator iter = suggestions.begin();
+			 iter != suggestions.end();
+			 iter++)
+		{
+			if (stateName == iter->second)
+			{
+				isInContact = true;
+			}
+		}
+
+		bool isDeleted = false;
+		for (std::deque<std::string>::iterator iter = deletedModels.begin();
+			 iter != deletedModels.end();
+			 ++iter)
+		{
+			if (stateName == *iter)
+			{
+				isDeleted = true;
+			}
+		}
+
+		if (!isInContact && !isDeleted && stateName != "ground_plane")
+		{
+			return stateName;
+		}
+	}
+
+
+	// return the most likely node to be freeable
 	for (std::vector<std::pair<unsigned int, std::string> >::iterator iter = suggestions.begin();
 		 iter != suggestions.end();
 		 iter++)
@@ -153,7 +186,7 @@ void removeItem(std::string& id)
 	pauseSrvClient.call(eReq, eResp);
 
 	// Delete the model from monitoring
-	ignoredModels.push_back(id);
+	deletedModels.push_back(id);
 	graph.deleteNode(id);
 
 	// Move the model out of the main sim area
@@ -161,8 +194,8 @@ void removeItem(std::string& id)
 	gazebo_msgs::SetModelStateResponse resp;
 	req.model_state.model_name = id;
 	req.model_state.pose.position.x = 5;
-	req.model_state.pose.position.y = 1;
-	req.model_state.pose.position.z = 2;
+	req.model_state.pose.position.y = 1+(removalDepth/4.0);
+	req.model_state.pose.position.z = 0.4;
 	req.model_state.pose.orientation.w = 1;
 	req.model_state.pose.orientation.x = 0;
 	req.model_state.pose.orientation.y = 0;
@@ -217,7 +250,7 @@ void undoMove()
 	// One less item removed
 	removalDepth--;
 
-	std::string attempted = ignoredModels.at(ignoredModels.size()-1);
+	std::string attempted = deletedModels.at(deletedModels.size()-1);
 
 	// Mark as failed
 	failedModels[removalDepth].insert(attempted);
@@ -228,7 +261,7 @@ void undoMove()
 	regardPub.publish(msg);
 
 	// Restore the item's standing
-	ignoredModels.pop_back();
+	deletedModels.pop_back();
 
 	// Rebuild the contact graph
 	rebuildContactGraph();
@@ -255,8 +288,8 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 
 		bool isIgnored = false;
 		// Don't add elements to the map that are "deleted"
-		for (std::deque<std::string>::iterator iter = ignoredModels.begin();
-			 iter != ignoredModels.end();
+		for (std::deque<std::string>::iterator iter = deletedModels.begin();
+			 iter != deletedModels.end();
 			 ++iter)
 		{
 			if (a == *iter || b == *iter)
