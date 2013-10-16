@@ -55,9 +55,6 @@
 
 #include "rubble/GraphHelper.h"
 
-#include <ap_robot_utils/geometry_utils.h>
-#include <ap_robot_utils/pose_conversions.h>
-
 /**
  * @brief Motion below which is considered a static scene
  */
@@ -103,8 +100,6 @@ std::deque<std::string> deletedModels; // Models that have been "deleted"
 // Monitor what's worked and what hasn't
 int removalDepth = 0;
 std::vector<std::set<std::string> > failedModels;
-
-ap::Mesh defaultMesh;
 
 // Forward declarations for functions
 std::string proposeRemoval();
@@ -322,60 +317,8 @@ void contactCallback(const gazebo_msgs::ContactsStateConstPtr contacts)
 
 		if (isIgnored) {continue;}
 
-		// Find the correct direction
-		// Create the intersection ray
-		ap::Ray z;
-		z.point.x() = contact.contact_positions[0].x;
-		z.point.y() = contact.contact_positions[0].y;
-		z.point.z() = -1;
-		z.vector.x() = 0;
-		z.vector.y() = 0;
-		z.vector.z() = 1;
-
-		// Rotate the meshes into place
-		ap::Mesh aMesh, bMesh;
-		for (int i = 0; i < currentState.name.size(); i++)
-		{
-			if (currentState.name[i] == a)
-			{
-				aMesh = ap::toIsometry(currentState.pose[i]) * defaultMesh;
-			}
-			else if (currentState.name[i] == b)
-			{
-				bMesh = ap::toIsometry(currentState.pose[i]) * defaultMesh;
-			}
-		}
-
-		float aMax = 0, bMax = 0;
-		// For each triangle in mesh
-		for (int i = 0; i < aMesh.faces.size(); i++)
-		{
-			// Check for intersection. If finite, set distance
-			ap::Triangle triangle(aMesh.vertices[aMesh.faces[i].vertices[0]],
-								  aMesh.vertices[aMesh.faces[i].vertices[1]],
-								  aMesh.vertices[aMesh.faces[i].vertices[2]]);
-			Eigen::Vector3f intersection = ap::intersectRayTriangle(z, triangle);
-			if (std::isfinite(intersection.z()))
-			{
-				if (intersection.z() > aMax) { aMax = intersection.z(); }
-			}
-		}
-		for (int i = 0; i < bMesh.faces.size(); i++)
-		{
-			// Check for intersection. If finite, set distance
-			ap::Triangle triangle(bMesh.vertices[bMesh.faces[i].vertices[0]],
-								  bMesh.vertices[bMesh.faces[i].vertices[1]],
-								  bMesh.vertices[bMesh.faces[i].vertices[2]]);
-			Eigen::Vector3f intersection = ap::intersectRayTriangle(z, triangle);
-			if (std::isfinite(intersection.z()))
-			{
-				if (intersection.z() > bMax) { bMax = intersection.z(); }
-			}
-		}
-
-
 		// Add the edge in the correct direction
-		if (aMax < bMax)
+		if (contact.info == contact.collision1_name)
 		{
 			graph.addEdge(a, b);
 		}
@@ -447,31 +390,6 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "removal_planner");
 	nh.reset(new ros::NodeHandle);
-
-	// Create a block mesh for vertical testing
-	float dx = 1.0/2.0;
-	float dy = 0.0381/2.0;
-	float dz = 0.0889/2.0;
-	defaultMesh.vertices.push_back(Eigen::Vector3f(dx, dy, dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(dx, dy, -dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(dx, -dy, dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(dx, -dy, -dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, dy, dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, dy, -dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, -dy, dz));
-	defaultMesh.vertices.push_back(Eigen::Vector3f(-dx, -dy, dz));
-	defaultMesh.faces.push_back(ap::Mesh::Face(1,2,3));
-	defaultMesh.faces.push_back(ap::Mesh::Face(2,3,4));
-	defaultMesh.faces.push_back(ap::Mesh::Face(2,4,6));
-	defaultMesh.faces.push_back(ap::Mesh::Face(4,6,8));
-	defaultMesh.faces.push_back(ap::Mesh::Face(1,2,6));
-	defaultMesh.faces.push_back(ap::Mesh::Face(1,6,5));
-	defaultMesh.faces.push_back(ap::Mesh::Face(1,3,5));
-	defaultMesh.faces.push_back(ap::Mesh::Face(3,5,7));
-	defaultMesh.faces.push_back(ap::Mesh::Face(3,4,8));
-	defaultMesh.faces.push_back(ap::Mesh::Face(3,7,8));
-	defaultMesh.faces.push_back(ap::Mesh::Face(5,6,7));
-	defaultMesh.faces.push_back(ap::Mesh::Face(6,7,8));
 
 	sleep(15);
 

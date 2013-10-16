@@ -9,7 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(catkin REQUIRED COMPONENTS roscpp roslib
  message_generation genmsg actionlib actionlib_msgs
  std_msgs sensor_msgs geometry_msgs diagnostic_msgs visualization_msgs gazebo_msgs
- tf tf_conversions eigen_conversions rviz class_loader urdf)
+ tf tf_conversions eigen_conversions rviz class_loader urdf
+ap_robot_utils)
 
 # Include Eigen for matrices
 find_package(Eigen REQUIRED)
@@ -36,6 +37,7 @@ catkin_package(
  message_runtime genmsg actionlib actionlib_msgs
  std_msgs sensor_msgs geometry_msgs trajectory_msgs diagnostic_msgs visualization_msgs interactive_markers gazebo_msgs
  tf tf_conversions eigen_conversions rviz class_loader urdf
+ap_robot_utils
 	DEPENDS ach rt QtCore QtGui
 )
 
