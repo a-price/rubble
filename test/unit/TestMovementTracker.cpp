@@ -117,16 +117,12 @@ public:
 	{
 		ros::NodeHandle nh;
 		rubble::MovementTracker mt(nh);
-		std::vector<double> moved;
-		double m;
-		std::cout << std::endl;
+		double moved;
 
 		moved = mt.IntegrateMovement(states);
 
-		for (int i = 0; i < states.name.size(); i++)
-		{
-			std::cout << moved[i] << std::endl;
-		}
+		std::cout << moved << std::endl;
+
 	}
 };
 

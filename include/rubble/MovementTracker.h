@@ -11,10 +11,16 @@ class MovementTracker
 {
 public:
 	MovementTracker(ros::NodeHandle& _nh);
-	std::vector<double> IntegrateMovement(gazebo_msgs::ModelStates);
+	double IntegrateMovement(gazebo_msgs::ModelStates);
 private:
 	ros::Publisher mstatesPub;
 	ros::NodeHandle nh;
+
+	ros::ServiceClient pauseSrvClient;
+	ros::ServiceClient unpauseSrvClient;
+
+	std::set<std::string> ignoreModels;
+
 };
 }
 #endif // MOVEMENTTRACKER_H
