@@ -7,7 +7,8 @@ namespace rubble
 {
 
 	MovementTracker::MovementTracker(ros::NodeHandle& _nh)
-		: nh(_nh)
+		: nh(_nh),
+		  windowSize(6)
 	{
 		ignoreModels.insert("ground_plane");
 
@@ -25,6 +26,7 @@ namespace rubble
 		std_srvs::EmptyResponse eResp;
 
 		double totalMove = 0;
+		int numItems = 0;
 		bool someModelExists = false;
 
 		std_msgs::Float32 sumAllMove;
@@ -46,13 +48,18 @@ namespace rubble
 			totalMove += fabs(t.linear.x);
 			totalMove += fabs(t.linear.y);
 			totalMove += fabs(t.linear.z);
-			totalMove += fabs(t.angular.x)*0.01;//multiply by scaling factor (this is in radians); using scaling factor of 1 cm
-			totalMove += fabs(t.angular.y)*0.01;
-			totalMove += fabs(t.angular.z)*0.01;
+			totalMove += fabs(t.angular.x)*0.75;//multiply by scaling factor (this is in radians); using scaling factor of 1 cm
+			totalMove += fabs(t.angular.y)*0.75;
+			totalMove += fabs(t.angular.z)*0.75;
+
+			numItems++;
+
 			if (totalMove != totalMove) {std::cerr << "NaN Error." << std::endl; }
 		}
 
-		sumAllMove.data = totalMove;
+		runningAverage = runningAverage*(windowSize-1)/windowSize + totalMove/numItems/windowSize;
+
+		sumAllMove.data = runningAverage;
 
 		if (someModelExists)
 //		if(sumAllMove.data < 0.05)// if sum of all movements of all boards is less than 5cm. This value may need adjustment.
