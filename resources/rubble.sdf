@@ -25,15 +25,6 @@
 					<emissive>0 0 0 0</emissive>
 				</material>
 			</visual>
-			<physics>
-				<simbody>
-					<contact>
-						<static_friction>0.95</static_friction>
-						<dynamic_friction>0.95</static_friction>
-						<viscous_friction>0.95</viscous_friction>
-					</contact>
-				<simbody>
-			<physics>
 			<collision name='collision'>
 				<geometry>
 					<box>
