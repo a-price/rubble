@@ -58,12 +58,17 @@
 /**
  * @brief Motion below which is considered a static scene
  */
-const double STABLE_THRESHOLD = 0.8;
+const double STABLE_THRESHOLD = 0.6;
+
+/**
+ * @brief Motion below which is considered a static scene
+ */
+const double INITIAL_THRESHOLD = 0.8;
 
 /**
  * @brief Motion above which is considered a failed move
  */
-const double UNSTABLE_THRESHOLD = 10.0;
+const double UNSTABLE_THRESHOLD = 2.0;
 
 ros::NodeHandlePtr nh;
 ros::Subscriber contactSub;
@@ -80,6 +85,7 @@ ros::Time tLocked;
 ros::Duration tWait;
 bool isGatheringContactInfo = true;
 bool isUninitialized = true;
+bool isInitialDrop = true;
 
 gazebo_msgs::ModelStates currentState;
 std::deque<gazebo_msgs::ModelStates> stateLog;
@@ -347,7 +353,11 @@ void movementCallback(const std_msgs::Float32ConstPtr motion)
 		logMove();
 		removeItem(nextPiece);
 	}
-	else if (motion->data > UNSTABLE_THRESHOLD)
+	else if (isInitialDrop && motion->data > INITIAL_THRESHOLD)
+	{
+		isInitialDrop = false;
+	}
+	else if ((!isInitialDrop) && motion->data > UNSTABLE_THRESHOLD)
 	{
 		undoMove();
 	}
