@@ -102,6 +102,7 @@ std::deque<std::string> deletedModels; // Models that have been "deleted"
 
 // Monitor what's worked and what hasn't
 int removalDepth = 0;
+std::ostringstream removalStream;
 std::vector<std::set<std::string> > failedModels;
 
 ap::Mesh defaultMesh;
@@ -130,6 +131,22 @@ void rebuildContactGraph()
 	isGatheringContactInfo = true;
 }
 
+std::vector<std::pair<unsigned int, std::string> > suggestByCOM()
+{
+	std::vector<std::pair<unsigned int, std::string> > retVal;
+
+	for (int i = 0; i < currentState.name.size(); i++)
+	{
+		if (currentState.name[i] == "ground_plane") { continue; }
+		std::pair<unsigned int, std::string> newEntry(int(currentState.pose[i].position.z*-1000), currentState.name[i]);
+		retVal.push_back(newEntry);
+	}
+
+	std::sort(retVal.begin(), retVal.end());
+
+	return retVal;
+}
+
 std::string proposeRemoval()
 {
 	std::cerr << "Proposing...";
@@ -142,7 +159,8 @@ std::string proposeRemoval()
 	}
 
 	// Find unattached objects
-	std::vector<std::pair<unsigned int, std::string> > suggestions = graph.sortByDegree();
+	//std::vector<std::pair<unsigned int, std::string> > suggestions = graph.sortByDegree();
+	std::vector<std::pair<unsigned int, std::string> > suggestions = suggestByCOM();
 	for (int i = 0; i < currentState.name.size(); i++)
 	{
 		bool isInContact = false;
@@ -221,6 +239,8 @@ void removeItem(std::string& id)
 
 	// One more item removed
 	removalDepth++;
+	removalStream << removalDepth << "\t";
+	std::cout << removalStream.str();
 
 	stableCount = 0;
 
@@ -249,7 +269,7 @@ void undoMove()
 //		std::cerr << "Already at root removal." << std::endl;
 		return;
 	}
-	std::cerr << "Reverting" << std::endl;
+//	std::cerr << "Reverting" << std::endl;
 	// Respawn world to checkpoint
 	gazebo_msgs::ModelStates prevStates = stateLog.at(stateLog.size()-1);
 	stateLog.pop_back();
@@ -268,6 +288,8 @@ void undoMove()
 
 	// One less item removed
 	removalDepth--;
+	removalStream << removalDepth << "\t";
+	std::cout << removalStream.str();
 
 	std::string attempted = deletedModels.at(deletedModels.size()-1);
 
@@ -442,7 +464,7 @@ void movementCallback(const std_msgs::Float32ConstPtr motion)
 			{
 				return;
 			}
-			std::cerr << nextPiece << std::endl;
+//			std::cerr << nextPiece << std::endl;
 			logMove();
 			removeItem(nextPiece);
 		}
@@ -450,7 +472,7 @@ void movementCallback(const std_msgs::Float32ConstPtr motion)
 	}
 	else if (isInitialDrop && motion->data > INITIAL_THRESHOLD)
 	{
-		std::cerr << "Setting initial drop false." << std::cerr;
+//		std::cerr << "Setting initial drop false." << std::cerr;
 		isInitialDrop = false;
 	}
 	else if ((!isInitialDrop) && motion->data > UNSTABLE_THRESHOLD)
